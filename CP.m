@@ -26,4 +26,5 @@ for i = 1:paramsolver.I
     u = u + alpha*(q - u);
     
     SDR(i) = 20*log10(norm(in,2)./norm(in-x, 2));
+
 end

@@ -9,7 +9,7 @@ addpath('PEMO-Q');
 
 
 %% input signal
-audiofile = 'a66_wind_ensemble_stravinsky.wav';
+audiofile = 'a42_accordion.wav';
 [x, param.fs] = audioread(audiofile);
 
 % signal length
@@ -29,7 +29,7 @@ xq = quant(x, param.delta);
 
 %% parameters
 
-winLen = 8192;
+winLen = 2048;
 shiftLen = winLen/4;
 FFTnum = 2*winLen;
 
@@ -46,8 +46,9 @@ paramsolver.alpha = 1;  % relaxation parameter
 
 paramsolver.lambda = [1, 1, 0.1, 0.01, 0.001, 0.001, 0.0001, 0.00001, 0.00001, 0.00001, 0.00001, 0.00001];  % threshold (regularization parameter)
 
-paramsolver.I = 350;
-paramsolver.J = 1;
+paramsolver.I = 200;
+paramsolver.J = 2;
+paramsolver.K = 200;
 
 %% iPC DGT
 
@@ -57,7 +58,7 @@ a = param.a;
 M = param.M;
 w = param.w;
 
-[win, ~] = generalizedCosWin(w, 'hann');
+[win, ~] = generalizedCosWin(w, 'hanning');
 tight_win = calcCanonicalTightWindow(win, a);
 tight_win = tight_win/norm(tight_win)*sqrt(a/w);
 diff_win = numericalDiffWin(tight_win);
@@ -88,6 +89,14 @@ hatG = @(x, omega) D(R(G(x), omega));
 hatG_adj = @(u, omega) G_adj(R_adj(D_adj(u), omega));
 
 
+% SPADQ settings
+param.Ls = length(x);
+param.lam = [0.1; 0.0038; 0.0023; 0.0012; 0.000094; 0.000032; 0.000013; 0.0000055];
+
+    param.F = frametight(frame('dgtreal', {'hanning', param.w}, param.a, param.M));
+    param.F = frameaccel(param.F, param.Ls);  % precomputation for a fixed signal length
+
+    param.rho = 1;
 
 %%
 
@@ -106,32 +115,34 @@ soft = @(z, lambda) sign(z).*max(abs(z) - lambda(param.delta), 0);
     paramsolver.u0 = zeros(size(param.L(zeros(length(insig), 1))));
     x_old = insig;
 
-    SDR_in_time_all = zeros(1, paramsolver.J * paramsolver.I);
+    SDR_in_time_all = zeros(1, (paramsolver.J-1) * (paramsolver.I + paramsolver.K));
 
 
     for j = 1:paramsolver.J
 
-        [x_hat, SDR_in_time] = CP(param, paramsolver, xq, x);
-        
-        if norm(x_old - x_hat) < paramsolver.epsilon
-            break
-        end
+        if j == 1
 
-        omega_x_hat = omega(x_hat);
-        param.L = @(x) hatG(x, omega_x_hat);
-        param.L_adj = @(u) hatG_adj(u, omega_x_hat);
+        [x_hat, SDR_in_time] = CP(param, paramsolver, xq, x);
         paramsolver.x0 = x_hat;
 
-        x_old = x_hat;
+        SDR_in_time_all(1:paramsolver.I) = SDR_in_time;
 
-        SDR_in_time_all((j-1)*paramsolver.I+1:j*paramsolver.I) = SDR_in_time;
+        else
+
+        [x_hat, SDR_in_time] = cp_alg(insig, param, paramsolver, x);
+
+        SDR_in_time_all(paramsolver.I+1:end) = SDR_in_time;
+
+        end       
 
     end
+
+
 
     outsig = x_hat;
 
     figure;
-    plot(SDR_in_time_all)
+    plot(SDR_in_time_all);
    
 [~, ~, ODG] = audioqual(x, outsig, param.fs);
 SDR = 20*log10(norm(x,2)./norm(x-outsig, 2));

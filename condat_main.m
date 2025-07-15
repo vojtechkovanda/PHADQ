@@ -9,7 +9,7 @@ addpath('PEMO-Q');
 
 
 %% input signal
-audiofile = 'a66_wind_ensemble_stravinsky.wav';
+audiofile = 'a60_piano_schubert.wav';
 [x, param.fs] = audioread(audiofile);
 
 % signal length
@@ -29,7 +29,7 @@ xq = quant(x, param.delta);
 
 %% parameters
 
-winLen = 8192;
+winLen = 2048;
 shiftLen = winLen/4;
 FFTnum = 2*winLen;
 
@@ -40,13 +40,14 @@ param.w = winLen;
 
 paramsolver.epsilon = 0.001;  % for stopping criterion
 
-paramsolver.tau = 1;  % step size
+paramsolver.tau = 1/4;  % step size
 paramsolver.sigma = 1;  % step size
-paramsolver.alpha = 1;  % relaxation parameter
+paramsolver.alpha = 1/2;  % relaxation parameter
 
-paramsolver.lambda = [1, 1, 0.1, 0.01, 0.001, 0.001, 0.0001, 0.00001, 0.00001, 0.00001, 0.00001, 0.00001];  % threshold (regularization parameter)
+paramsolver.lambda1 = 0.00001*[1, 1, 1, 1, 1, 1, 1, 1, 1, 1];  % threshold (regularization parameter)
+paramsolver.lambda2 = 0.00001*[1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
 
-paramsolver.I = 350;
+paramsolver.I = 250;
 paramsolver.J = 1;
 
 %% iPC DGT
@@ -57,7 +58,7 @@ a = param.a;
 M = param.M;
 w = param.w;
 
-[win, ~] = generalizedCosWin(w, 'hann');
+[win, ~] = generalizedCosWin(w, 'hanning');
 tight_win = calcCanonicalTightWindow(win, a);
 tight_win = tight_win/norm(tight_win)*sqrt(a/w);
 diff_win = numericalDiffWin(tight_win);
@@ -94,44 +95,28 @@ hatG_adj = @(u, omega) G_adj(R_adj(D_adj(u), omega));
 soft = @(z, lambda) sign(z).*max(abs(z) - lambda(param.delta), 0);
 
     sigma = paramsolver.sigma;
-    lambda = paramsolver.lambda;
-    param.prox = @(z) soft(z, lambda/sigma);
+    lambda1 = paramsolver.lambda1;
+    param.prox = @(z) soft(z, lambda1/sigma);
 
     %omega_y = omega(insig);
     omega_y = omega(xq);
     param.L = @(x) hatG(x, omega_y);
     param.L_adj = @(u) hatG_adj(u, omega_y);
 
+        param.L1 = @(x) G(x);
+    param.L1_adj = @(u) G_adj(u);
+
     paramsolver.x0 = insig;
-    paramsolver.u0 = zeros(size(param.L(zeros(length(insig), 1))));
-    x_old = insig;
-
-    SDR_in_time_all = zeros(1, paramsolver.J * paramsolver.I);
+    paramsolver.u1 = zeros(size(param.L1(zeros(length(insig), 1))));
+    paramsolver.u2 = zeros(size(param.L(zeros(length(insig), 1))));
 
 
-    for j = 1:paramsolver.J
-
-        [x_hat, SDR_in_time] = CP(param, paramsolver, xq, x);
+    [x_hat, SDR_in_time] = CV(param, paramsolver, xq, x);
         
-        if norm(x_old - x_hat) < paramsolver.epsilon
-            break
-        end
-
-        omega_x_hat = omega(x_hat);
-        param.L = @(x) hatG(x, omega_x_hat);
-        param.L_adj = @(u) hatG_adj(u, omega_x_hat);
-        paramsolver.x0 = x_hat;
-
-        x_old = x_hat;
-
-        SDR_in_time_all((j-1)*paramsolver.I+1:j*paramsolver.I) = SDR_in_time;
-
-    end
-
     outsig = x_hat;
 
     figure;
-    plot(SDR_in_time_all)
+    plot(SDR_in_time)
    
 [~, ~, ODG] = audioqual(x, outsig, param.fs);
 SDR = 20*log10(norm(x,2)./norm(x-outsig, 2));
