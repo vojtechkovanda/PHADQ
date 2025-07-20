@@ -1,4 +1,4 @@
-function [x, SDR] = CV(param, paramsolver, xq, in)
+function [x, SDR, ODG] = CV(param, paramsolver, xq, in)
 
 %% initialization
 
@@ -17,6 +17,7 @@ sigma = paramsolver.sigma;
 alpha = paramsolver.alpha;
 
 SDR = zeros(1, paramsolver.I);
+
 
 
 %% iteration
@@ -48,4 +49,5 @@ for i = 1:paramsolver.I
         
 
     SDR(i) = 20*log10(norm(in,2)./norm(in-x, 2));
+
 end

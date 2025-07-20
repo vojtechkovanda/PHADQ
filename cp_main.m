@@ -3,13 +3,16 @@
 % Vojtěch Kovanda
 % Brno University of Technology, 2025
 
+function [SDR, idxSDR, SDRq, ODG, idxODG, ODGq] = cp_main(audiofile, wordlength)
+
 addpath('phase_correction');
 addpath('dataset');
 addpath('PEMO-Q');
+addpath('Sounds');
 
 
 %% input signal
-audiofile = 'a66_wind_ensemble_stravinsky.wav';
+% audiofile = 'a66_wind_ensemble_stravinsky.wav';
 [x, param.fs] = audioread(audiofile);
 
 % signal length
@@ -22,7 +25,7 @@ x = x/maxval;
 %% generate observation y
 
 % setting conversion parameters
-param.delta = 8;
+param.delta = wordlength;
 
 % quantization
 xq = quant(x, param.delta);
@@ -44,9 +47,9 @@ paramsolver.tau = 1;  % step size
 paramsolver.sigma = 1;  % step size
 paramsolver.alpha = 1;  % relaxation parameter
 
-paramsolver.lambda = [1, 1, 0.1, 0.01, 0.001, 0.001, 0.0001, 0.00001, 0.00001, 0.00001, 0.00001, 0.00001];  % threshold (regularization parameter)
+paramsolver.lambda = [2, 0.1, 0.1, 0.01, 0.001, 0.001, 0.0001, 0.00001, 0.00001, 0.00001, 0.00001, 0.00001];  % threshold (regularization parameter)
 
-paramsolver.I = 350;
+paramsolver.I = 400;
 paramsolver.J = 1;
 
 %% iPC DGT
@@ -111,7 +114,7 @@ soft = @(z, lambda) sign(z).*max(abs(z) - lambda(param.delta), 0);
 
     for j = 1:paramsolver.J
 
-        [x_hat, SDR_in_time] = CP(param, paramsolver, xq, x);
+        [x_hat, SDR_in_time, ODG_in_time] = CP(param, paramsolver, xq, x);
         
         if norm(x_old - x_hat) < paramsolver.epsilon
             break
@@ -130,16 +133,23 @@ soft = @(z, lambda) sign(z).*max(abs(z) - lambda(param.delta), 0);
 
     outsig = x_hat;
 
-    figure;
-    plot(SDR_in_time_all)
+    % figure;
+    % plot(SDR_in_time_all)
+    % 
+    % figure;
+    % plot(ODG_in_time);
+
+    [ODG, idxODG] = max(ODG_in_time);
+    [SDR, idxSDR] = max(SDR_in_time);
+
    
-[~, ~, ODG] = audioqual(x, outsig, param.fs);
-SDR = 20*log10(norm(x,2)./norm(x-outsig, 2));
+% [~, ~, ODG] = audioqual(x, outsig, param.fs);
+% SDR = 20*log10(norm(x,2)./norm(x-outsig, 2));
 
 [~, ~, ODGq] = audioqual(x, insig, param.fs);
 SDRq = 20*log10(norm(x,2)./norm(x-insig, 2));
 
-fprintf('SDR of the quantized signal is %4.3f dB.\n', SDRq);
-fprintf('SDR of the reconstructed signal is %4.3f dB.\n', SDR);
-fprintf('ODG of the quantized signal is %4.3f.\n', ODGq);
-fprintf('ODG of the reconstructed signal is %4.3f.\n', ODG);
+% fprintf('SDR of the quantized signal is %4.3f dB.\n', SDRq);
+% fprintf('SDR of the reconstructed signal is %4.3f dB.\n', SDR);
+% fprintf('ODG of the quantized signal is %4.3f.\n', ODGq);
+% fprintf('ODG of the reconstructed signal is %4.3f.\n', ODG);
