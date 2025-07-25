@@ -1,4 +1,4 @@
-function [data_rec, dsdr_rec, obj_func] = cp_cons_l1_ana(data_quantized, param, paramsolver, data)
+function [data_rec, dsdr_rec, obj_func, SDR] = cp_cons_l1_ana(data_quantized, param, paramsolver, data)
 % CP_CONS_l1_ANA is the implementation of the Chamboll-Pock algorithm solving
 % the analysis version of consistent l1 minimization-based audio dequantization.
 % 
@@ -15,6 +15,8 @@ paramsolver.rho = 1;    % step size for CP algorithm rho = <0,1>
 % starting poing
 p = data_quantized; 
 q = frana(param.F, p);
+
+SDR = zeros(1, paramsolver.maxit);
 
 x = data_quantized; % initialization of reconstructed data vector
 
@@ -60,6 +62,8 @@ while cnt < paramsolver.maxit
         end
         fprintf('\n')        
     end
+
+    SDR(cnt) = 20*log10(norm(data,2)./norm(data-x, 2));
        
 end
 

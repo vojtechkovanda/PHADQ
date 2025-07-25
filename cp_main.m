@@ -3,17 +3,22 @@
 % Vojtěch Kovanda
 % Brno University of Technology, 2025
 
-function [SDR, idxSDR, SDRq, ODG, idxODG, ODGq] = cp_main(audiofile, wordlength)
+function [SDR, idxSDR, SDRq, ODG, idxODG, ODGq] = cp_main(audiofile, wordlength, method)
+
+% wordlength = 6;
 
 addpath('phase_correction');
 addpath('dataset');
 addpath('PEMO-Q');
 addpath('Sounds');
 
+% method = 'inconsistent'; % 'inconsistent'
 
 %% input signal
 % audiofile = 'a66_wind_ensemble_stravinsky.wav';
 [x, param.fs] = audioread(audiofile);
+
+% [x, param.fs] = audioread('a18_bassoon.wav');
 
 % signal length
 param.L = length(x);
@@ -45,11 +50,11 @@ paramsolver.epsilon = 0.001;  % for stopping criterion
 
 paramsolver.tau = 1;  % step size
 paramsolver.sigma = 1;  % step size
-paramsolver.alpha = 1;  % relaxation parameter
+paramsolver.alpha = 1/3;  % relaxation parameter
 
 paramsolver.lambda = [2, 0.1, 0.1, 0.01, 0.001, 0.001, 0.0001, 0.00001, 0.00001, 0.00001, 0.00001, 0.00001];  % threshold (regularization parameter)
 
-paramsolver.I = 400;
+paramsolver.I = 300;
 paramsolver.J = 1;
 
 %% iPC DGT
@@ -114,8 +119,18 @@ soft = @(z, lambda) sign(z).*max(abs(z) - lambda(param.delta), 0);
 
     for j = 1:paramsolver.J
 
+
+        switch method
+            case 'consistent'
+
         [x_hat, SDR_in_time, ODG_in_time] = CP(param, paramsolver, xq, x);
-        
+            
+            case 'inconsistent'
+
+        [x_hat, SDR_in_time, ODG_in_time] = CP_incons(param, paramsolver, xq, x);
+
+        end
+
         if norm(x_old - x_hat) < paramsolver.epsilon
             break
         end

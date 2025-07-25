@@ -7,9 +7,13 @@ sounds = {'a08_violin.wav', 'a16_clarinet.wav', 'a18_bassoon.wav', 'a25_harp.wav
 
 ODG = zeros(1, 8);
 idxODG = zeros(1, 8);
+ODGi = zeros(1, 8);
+idxODGi = zeros(1, 8);
 ODGq = zeros(1, 8);
 SDR = zeros(1, 8);
 idxSDR = zeros(1, 8);
+SDRi = zeros(1, 8);
+idxSDRi = zeros(1, 8);
 SDRq = zeros(1, 8);
 
 SDRs = zeros(1, 8);
@@ -17,9 +21,13 @@ ODGs = zeros(1, 8);
 
 ODGavg = zeros(1, 8);
 idxODGavg = zeros(1, 8);
+ODGiavg = zeros(1, 8);
+idxODGiavg = zeros(1, 8);
 ODGqavg = zeros(1, 8);
 SDRavg = zeros(1, 8);
 idxSDRavg = zeros(1, 8);
+SDRiavg = zeros(1, 8);
+idxSDRiavg = zeros(1, 8);
 SDRqavg = zeros(1, 8);
 
 SDRsavg = zeros(1, 8);
@@ -27,18 +35,23 @@ ODGsavg = zeros(1, 8);
 
 for j=2:10
 
-for i=1:7
+ for i=1:7
 
-[SDR(i+1), idxSDR(i+1), SDRq(i+1), ODG(i+1), idxODG(i+1), ODGq(i+1)] = cp_main(sounds{j}, i+1);
+[SDR(i+1), idxSDR(i+1), SDRq(i+1), ODG(i+1), idxODG(i+1), ODGq(i+1)] = cp_main(sounds{j}, i+1, 'consistent');
+[SDRi(i+1), idxSDRi(i+1), ~, ODGi(i+1), idxODGi(i+1), ~] = cp_main(sounds{j}, i+1, 'inconsistent');
 [SDRs(i+1), ODGs(i+1)] = dequantization_main(sounds{j}, i+1);
 
-end
+ end
 
 ODGavg = ODGavg + ODG;
 idxODGavg = idxODGavg + idxODG;
+ODGiavg = ODGiavg + ODGi;
+idxODGiavg = idxODGiavg + idxODGi;
 ODGqavg = ODGqavg + ODGq;
 SDRavg = SDRavg + SDR;
 idxSDRavg = idxSDRavg + idxSDR;
+SDRiavg = SDRiavg + SDRi;
+idxSDRiavg = idxSDRiavg + idxSDRi;
 SDRqavg = SDRqavg + SDRq;
 
 SDRsavg = SDRsavg + SDRs;
@@ -49,9 +62,13 @@ end
 
     ODGavg = ODGavg / 10;
     idxODGavg = idxODGavg / 10;
+    ODGiavg = ODGiavg / 10;
+    idxODGiavg = idxODGiavg / 10;
     ODGqavg = ODGqavg / 10;
     SDRavg = SDRavg / 10;
     idxSDRavg = idxSDRavg / 10;
+    SDRiavg = SDRiavg / 10;
+    idxSDRiavg = idxSDRiavg / 10;
     SDRqavg = SDRqavg / 10;
 
     SDRsavg = SDRsavg / 10;
@@ -60,12 +77,14 @@ end
 figure
 plot(ODGavg);
 hold on
+plot(ODGiavg);
 plot(ODGqavg);
 plot(ODGsavg);
 
 figure
 plot(SDRavg);
 hold on
+plot(SDRiavg);
 plot(SDRqavg);
 plot(SDRsavg);
 
@@ -73,3 +92,5 @@ figure
 plot(idxSDRavg);
 hold on
 plot(idxODGavg*5-10);
+plot(idxSDRiavg);
+plot(idxODGiavg*5-10);

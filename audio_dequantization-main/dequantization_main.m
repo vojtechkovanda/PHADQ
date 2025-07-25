@@ -125,7 +125,7 @@ switch param.algorithm
         [data_rec, dsdr_iter, obj_iter] = dr_cons_l1_syn(data_quant, param, paramsolver, data);
         
     case {'CP_cons_l1_ana'} % consistent l1-minimization using analysis model of the signal, Chambolle-Pock algorithm
-        [data_rec, dsdr_iter, obj_iter] = cp_cons_l1_ana(data_quant, param, paramsolver, data);
+        [data_rec, dsdr_iter, obj_iter, SDR] = cp_cons_l1_ana(data_quant, param, paramsolver, data);
         
     case {'A_SPADQ', 'S_SPADQ', 'S_SPADQ_DR'} % non-convex l0-minimization based on ADMM, SPADQ algorithms
         % paramsolver parameters
@@ -166,7 +166,7 @@ time = toc;
 
 % SDR
 sdr_quant = sdr(data, data_quant);
-SDRs = sdr(data, data_rec);
+SDRs = max(SDR);
 % dsdr = sdr_rec - sdr_quant;
 % fprintf('SDR of the quantized signal is %4.3f dB.\n', sdr_quant);
 % fprintf('SDR of the reconstructed signal is %4.3f dB.\n', sdr_rec);
