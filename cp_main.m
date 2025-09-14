@@ -3,22 +3,22 @@
 % Vojtěch Kovanda
 % Brno University of Technology, 2025
 
-% function [SDR, idxSDR, SDRq, ODG, idxODG, ODGq] = cp_main(audiofile, wordlength, method)
+function [SDR, idxSDR, SDRq, ODG, idxODG, ODGq] = cp_main(audiofile, wordlength, method)
 
-wordlength = 8;
+%wordlength = 6;
 
 addpath('phase_correction');
 addpath('dataset');
 addpath('PEMO-Q');
 addpath('Sounds');
 
-method = 'inconsistent'; % 'inconsistent'
+%method = 'consistent'; % 'inconsistent'
 
 %% input signal
 % audiofile = 'a66_wind_ensemble_stravinsky.wav';
-% [x, param.fs] = audioread(audiofile);
+[x, param.fs] = audioread(audiofile);
 
-[x, param.fs] = audioread('a08_violin.wav');
+%[x, param.fs] = audioread('a08_violin.wav');
 
 % signal length
 param.L = length(x);
@@ -52,9 +52,12 @@ paramsolver.tau = 1;  % step size
 paramsolver.sigma = 1;  % step size
 paramsolver.alpha = 1/3;  % relaxation parameter
 
-paramsolver.lambda = [2, 0.1, 0.1, 0.001, 0.001, 0.001, 0.0001, 0.00001, 0.00001, 0.00001, 0.00001, 0.00001];  % threshold (regularization parameter)
+paramsolver.lambda = [2, 0.1, 0.1, 0.001, 0.01, 0.001, 0.0001, 0.0001, 0.00001, 0.00001, 0.00001, 0.00001];  % threshold (regularization parameter)
 
-paramsolver.I = 300;
+% if method == 'inconsistent'
+%     paramsolver.lambda(8) = 0.00001;
+% end
+paramsolver.I = 200;
 paramsolver.J = 1;
 
 %% iPC DGT
@@ -150,9 +153,10 @@ soft = @(z, lambda) sign(z).*max(abs(z) - lambda(param.delta), 0);
 
     figure;
     plot(SDR_in_time_all)
+    hold on
 
-    figure;
-    plot(ODG_in_time);
+    %figure;
+    %plot(ODG_in_time);
 
     [ODG, idxODG] = max(ODG_in_time);
     [SDR, idxSDR] = max(SDR_in_time);
@@ -164,7 +168,7 @@ soft = @(z, lambda) sign(z).*max(abs(z) - lambda(param.delta), 0);
 [~, ~, ODGq] = audioqual(x, insig, param.fs);
 SDRq = 20*log10(norm(x,2)./norm(x-insig, 2));
 
-fprintf('SDR of the quantized signal is %4.3f dB.\n', SDRq);
-fprintf('SDR of the reconstructed signal is %4.3f dB.\n', SDR);
-fprintf('ODG of the quantized signal is %4.3f.\n', ODGq);
-fprintf('ODG of the reconstructed signal is %4.3f.\n', ODG);
+% fprintf('SDR of the quantized signal is %4.3f dB.\n', SDRq);
+% fprintf('SDR of the reconstructed signal is %4.3f dB.\n', SDR);
+% fprintf('ODG of the quantized signal is %4.3f.\n', ODGq);
+% fprintf('ODG of the reconstructed signal is %4.3f.\n', ODG);

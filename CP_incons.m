@@ -32,7 +32,7 @@ for i = 1:paramsolver.I
     
     SDR(i) = 20*log10(norm(in,2)./norm(in-x, 2));
 
-        if mod(i, 5) == 0
+       if mod(i, 5) == 0
         
        [~, ~, ODG(i/5+10)] = audioqual(in, x, param.fs);
 

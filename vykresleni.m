@@ -1,23 +1,22 @@
-
+set(groot,'defaultTextInterpreter','latex');
+set(groot,'defaultLegendInterpreter','latex');
+set(groot,'defaultAxesTickLabelInterpreter','latex');
 
 figure
 bar([ODGavg',ODGiavg', ODGsavg', ODGqavg']);
-title('Average Values of ODG');
-xlabel('bit depth');
-ylabel('Average Values');
-legend('PHADQ cons', 'PHADQ incons', 'CP sparsity based', 'quantized');
+xlabel('word length (bps)');
+ylabel('PEMO-Q ODG');
+legend('B-PHADQ (consisitent)', 'B-PHADQ (inconsistent)', 'CP (sparsity based)', 'quantized');
 
 figure
 bar([SDRavg',SDRiavg', SDRsavg', SDRqavg']);
-title('Average Values of SDR');
-xlabel('bit depth');
-ylabel('Average Values');
-legend('PHADQ cons', 'PHADQ incons', 'CP sparsity based', 'quantized');
+xlabel('word length (bps)');
+ylabel('SDR (dB)');
+legend('B-PHADQ (consisitent)', 'B-PHADQ (inconsistent)', 'CP (sparsity based)', 'quantized');
 
 figure
 bar([idxSDRavg',idxSDRiavg', idxODGavg', idxODGiavg']);
-title('Average number of best iteration ODG or SDR');
-xlabel('bit depth');
-ylabel('Average Values');
-legend('PHADQ cons best SDR', 'PHADQ incons best SDR', 'PHADQ cons best ODG', 'PHADQ incons best ODG');
+xlabel('word length (bps)');
+ylabel('number of iteration');
+legend('B-PHADQ (consisitent) SDR', 'B-PHADQ (inconsisitent) SDR', 'B-PHADQ (consisitent) ODG', 'B-PHADQ (inconsisitent) ODG');
 
