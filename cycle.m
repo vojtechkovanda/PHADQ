@@ -6,11 +6,13 @@ addpath('audio_dequantization-main');
 %           'a42_accordion.wav', 'a58_guitar_sarasate.wav', 'a60_piano_schubert.wav', 'a66_wind_ensemble_stravinsky.wav'};
 % 
 ODG = zeros(1, 8);
+ODGoracle = zeros(1, 8);
 idxODG = zeros(1, 8);
 ODGi = zeros(1, 8);
 idxODGi = zeros(1, 8);
 ODGq = zeros(1, 8);
 SDR = zeros(1, 8);
+SDRoracle = zeros(1, 8);
 idxSDR = zeros(1, 8);
 SDRi = zeros(1, 8);
 idxSDRi = zeros(1, 8);
@@ -20,11 +22,13 @@ SDRs = zeros(1, 8);
 ODGs = zeros(1, 8);
 
 ODGavg = zeros(1, 8);
+ODGoracleavg = zeros(1, 8);
 idxODGavg = zeros(1, 8);
 ODGiavg = zeros(1, 8);
 idxODGiavg = zeros(1, 8);
 ODGqavg = zeros(1, 8);
 SDRavg = zeros(1, 8);
+SDRoracleavg = zeros(1, 8);
 idxSDRavg = zeros(1, 8);
 SDRiavg = zeros(1, 8);
 idxSDRiavg = zeros(1, 8);
@@ -33,17 +37,19 @@ SDRqavg = zeros(1, 8);
 SDRsavg = zeros(1, 8);
 ODGsavg = zeros(1, 8);
 
-for j=1:50
+for j=1:10
     
 
  for i=1:7
      display([num2str(j),' , ', num2str(i)]);
 
-[SDR(i+1), idxSDR(i+1), SDRq(i+1), ODG(i+1), idxODG(i+1), ODGq(i+1)] = cp_main(['dataset/IRMAS/', num2str(j),'u.wav'], i+1, 'consistent');
-[SDRi(i+1), idxSDRi(i+1), ~, ODGi(i+1), idxODGi(i+1), ~] = cp_main(['dataset/IRMAS/', num2str(j),'u.wav'], i+1, 'inconsistent');
-[SDRs(i+1), ODGs(i+1)] = dequantization_main(['dataset/IRMAS/', num2str(j),'u.wav'], i+1);
+[SDR(i+1), idxSDR(i+1), SDRq(i+1), ODG(i+1), idxODG(i+1), ODGq(i+1)] = cp_main(['dataset/EBU_SQAM/', num2str(j),'u.wav'], i+1, 'consistent');
+[SDRi(i+1), idxSDRi(i+1), ~, ODGi(i+1), idxODGi(i+1), ~] = cp_main(['dataset/EBU_SQAM/', num2str(j),'u.wav'], i+1, 'inconsistent');
+[SDRs(i+1), ODGs(i+1)] = dequantization_main(['dataset/EBU_SQAM/', num2str(j),'u.wav'], i+1);
+[SDRoracle(i+1), ODGoracle(i+1)] = cp_main(['dataset/EBU_SQAM/', num2str(j),'u.wav'], i+1);
 
  end
+ODGoracleavg = ODGoracleavg + ODGoracle;
 
 ODGavg = ODGavg + ODG;
 idxODGavg = idxODGavg + idxODG;
@@ -51,6 +57,7 @@ ODGiavg = ODGiavg + ODGi;
 idxODGiavg = idxODGiavg + idxODGi;
 ODGqavg = ODGqavg + ODGq;
 SDRavg = SDRavg + SDR;
+SDRoracleavg = SDRoracleavg + SDRoracle;
 idxSDRavg = idxSDRavg + idxSDR;
 SDRiavg = SDRiavg + SDRi;
 idxSDRiavg = idxSDRiavg + idxSDRi;
@@ -62,19 +69,22 @@ ODGsavg = ODGsavg + ODGs;
 
 end
 
-    ODGavg = ODGavg / 50;
-    idxODGavg = idxODGavg / 50;
-    ODGiavg = ODGiavg / 50;
-    idxODGiavg = idxODGiavg / 50;
-    ODGqavg = ODGqavg / 50;
-    SDRavg = SDRavg / 50;
-    idxSDRavg = idxSDRavg / 50;
-    SDRiavg = SDRiavg / 50;
-    idxSDRiavg = idxSDRiavg /50;
-    SDRqavg = SDRqavg / 50;
+    ODGavg = ODGavg / 10;
+    idxODGavg = idxODGavg / 10;
+    ODGiavg = ODGiavg / 10;
+    idxODGiavg = idxODGiavg / 10;
+    ODGqavg = ODGqavg / 10;
+    SDRavg = SDRavg / 10;
+    idxSDRavg = idxSDRavg / 10;
+    SDRiavg = SDRiavg / 10;
+    idxSDRiavg = idxSDRiavg /10;
+    SDRqavg = SDRqavg / 10;
 
-    SDRsavg = SDRsavg / 50;
-    ODGsavg = ODGsavg / 50;
+    SDRsavg = SDRsavg / 10;
+    ODGsavg = ODGsavg / 10;
+
+    SDRoracleavg = SDRoracleavg / 10;
+    ODGoracleavg = ODGoracleavg / 10;
 
 figure
 plot(ODGavg);

@@ -6,6 +6,7 @@ addpath('audio_dequantization-main');
 %           'a42_accordion.wav', 'a58_guitar_sarasate.wav', 'a60_piano_schubert.wav', 'a66_wind_ensemble_stravinsky.wav'};
 % 
 ODG = zeros(1, 8);
+ODG = zeros(1, 8);
 idxODG = zeros(1, 8);
 ODGi = zeros(1, 8);
 idxODGi = zeros(1, 8);
