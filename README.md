@@ -1,4 +1,4 @@
-This file describes the MATLAB code and other files used in the article *Dequantization using instantaneous frequency.*
+This file describes the MATLAB code and other files used in the article *Audio dequantization using instantaneous frequency.*
 
 The code has been developed in MATLAB version R2025a
 
