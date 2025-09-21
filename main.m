@@ -10,7 +10,8 @@ addpath('dataset');
 method = 'consistent'; % 'inconsistent'
 
 %% input signal
-[x, param.fs] = audioread('dataset/EBU_SQAM/8.wav');
+audiofile = 'dataset/EBU_SQAM/8.wav';
+[x, param.fs] = audioread(audiofile);
 
 % signal length
 param.L = length(x);
