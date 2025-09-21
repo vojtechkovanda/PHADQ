@@ -22,7 +22,7 @@ x = x/maxval;
 %% generate observation y
 
 % setting conversion parameters
-param.delta = 10;
+param.delta = 6;
 
 % quantization
 xq = quant(x, param.delta);
@@ -33,12 +33,10 @@ winLen = 8192;
 shiftLen = winLen/4;
 FFTnum = 2*winLen;
 
-% parameter setting for PHAINs
+% parameter setting for B-PHADQ
 param.a = shiftLen;
 param.M = FFTnum;
 param.w = winLen;
-
-paramsolver.epsilon = 0.001;  % for stopping criterion
 
 paramsolver.tau = 1;  % step size
 paramsolver.sigma = 1;  % step size
@@ -89,14 +87,6 @@ hatG_adj = @(u, omega) G_adj(R_adj(D_adj(u), omega));
 
 
 %%
-
-soft = @(z, lambda) sign(z).*max(abs(z) - lambda(param.delta), 0);
-
-    sigma = paramsolver.sigma;
-    lambda = paramsolver.lambda;
-    param.prox = @(z) soft(z, lambda/sigma);
-
-    %omega_y = omega(insig);
     omega_y = omega(xq);
     param.L = @(x) hatG(x, omega_y);
     param.L_adj = @(u) hatG_adj(u, omega_y);
