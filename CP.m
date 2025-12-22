@@ -16,8 +16,6 @@ clip = @(x) (sign(x).*min(abs(x), paramsolver.lambda(param.delta)));
 %% iteration
 
 for i = 1:paramsolver.I
-    
-    waitbar(i/paramsolver.I);
 
      q = clip(q + sigma.*param.L(x));
      u = p_old - tau.*param.L_adj(q);

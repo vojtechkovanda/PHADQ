@@ -45,7 +45,7 @@ paramsolver.rho = 1/3;  % relaxation parameter
 
 paramsolver.lambda = [1, 0.1, 0.1, 0.001, 0.01, 0.001, 0.0001, 0.0001, 0.00001, 0.00001, 0.00001, 0.00001];  % threshold (regularization parameter)
 
-paramsolver.I = 50;
+paramsolver.I = 100;
 
 %% iPC DGT
 
@@ -62,6 +62,8 @@ diff_win = numericalDiffWin(tight_win);
     
 zeroPhaseFlag = true;
 rotateFlag = true;
+
+insig = zeroPaddingForDGT(xq, a, M);
 
 [sigIdx, sumIdx, sumArray, ifftArray, rotIdx] = precomputationForFDGT(length(insig), w, a, M);
 
@@ -87,8 +89,9 @@ hatG_adj = @(u, omega) G_adj(R_adj(D_adj(u), omega));
 
 
 
+
 %%
-    omega_y = omega(xq);
+    omega_y = omega(insig);
     param.L = @(x) hatG(x, omega_y);
     param.L_adj = @(u) hatG_adj(u, omega_y);
 
@@ -98,19 +101,19 @@ hatG_adj = @(u, omega) G_adj(R_adj(D_adj(u), omega));
         switch method
             case 'consistent'
 
-        x_hat = CP(param, paramsolver, xq);
+        x_hat = CP(param, paramsolver, insig);
             
             case 'inconsistent'
 
-        x_hat = CP_incons(param, paramsolver, xq);
+        x_hat = CP_incons(param, paramsolver, insig);
 
         end
 
-    outsig = x_hat;
+    outsig = x_hat(1:length(x));
 
    
 SDR = 20*log10(norm(x,2)./norm(x-outsig, 2));
-SDRq = 20*log10(norm(x,2)./norm(x-insig, 2));
+%SDRq = 20*log10(norm(x,2)./norm(x-insig, 2));
 
-fprintf('SDR of the quantized signal is %4.3f dB.\n', SDRq);
+%fprintf('SDR of the quantized signal is %4.3f dB.\n', SDRq);
 fprintf('SDR of the reconstructed signal is %4.3f dB.\n', SDR);

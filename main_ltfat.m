@@ -1,0 +1,123 @@
+% Chambolle-Pock dequantization with Phase aware prior
+% using LTFAT for DGT
+%
+% Vojtěch Kovanda
+% Brno University of Technology, 2025
+
+ltfatstart;
+
+addpath('phase_correction');
+addpath('dataset');
+
+method = 'consistent'; % 'inconsistent'
+
+%% input signal
+audiofile = 'dataset/EBU_SQAM/1.wav';
+[x, param.fs] = audioread(audiofile);
+
+% signal length
+param.Ls = length(x);
+
+% normalization
+maxval = max(abs(x));
+x = x/maxval;
+
+%% generate observation y
+
+% setting conversion parameters
+param.delta = 6;
+
+% quantization
+xq = quant(x, param.delta);
+
+%% parameters
+
+% parameter settings for STFT/DGT
+w = 8196; % window length
+a = w/4; % hop size
+M = w*2; % number of freq. rows
+wtype = 'hann'; % window type
+phasetype = 0; % 0-freqinv, 1-timeinv
+
+% setup tight window and its derivative 
+
+% 
+% [g, ~] = generalizedCosWin(w, 'hann');
+% g = calcCanonicalTightWindow(g, a);
+% g = g/norm(g)*sqrt(a/w);
+% g_diff = numericalDiffWin(tight_win);
+
+F = frametight(frame('dgtreal', {wtype, w}, a, M));
+F = frameaccel(F, param.Ls);
+
+g = F.g;
+
+if wtype == "hann"
+    % derivative of Hann window
+    d = (0:w-1)'/(w);
+    g_diff = -0.5*sin(2*pi.*d)*max(g);
+else 
+    % for other window functions
+    g_diff = numericalDiffWin(g);
+end
+
+% setup DGT, invDGT and derivative of DGT using LTFAT
+
+param.G = @(x) comp_sepdgtreal(x, g, a, M, phasetype);
+param.G_adj = @(u) comp_isepdgtreal(u, g, size(u,2)*a, a, M, phasetype);
+param.G_diff = @(x) comp_sepdgtreal(x, g_diff, a, M, phasetype);
+
+% definition of instantaneous frequency (omega)
+param.omega = @(x) calcInstFreq(param.G(x), param.G_diff(x), M, w);
+
+% def.of phase correction (R) and time-directional difference (D)
+param.R = @(z, omega) instPhaseCorrection(z, omega, a, M);
+param.R_adj =  @(z, omega) invInstPhaseCorrection(z, omega, a, M);
+param.D = @(z) z(:,1:end-1) - z(:,2:end);
+param.D_adj = @(z) [z(:,1), (z(:,2:end) - z(:,1:end-1)), -z(:,end)];
+
+%% iPC DGT
+hatG = @(x, omega) param.D(param.R(param.G(x), omega));
+hatG_adj = @(u, omega) param.G_adj(param.R_adj(param.D_adj(u), omega));
+
+% setup B-PHADQ
+
+paramsolver.tau = 1;  % step size
+paramsolver.sigma = 1;  % step size
+paramsolver.rho = 1/3;  % relaxation parameter
+
+paramsolver.lambda_c = [1, 0.07, 0.07, 0.03, 0.01, 0.001, 0.005, 0.0002];  % threshold (regularization parameter) consistent
+paramsolver.lambda_i = [1, 0.07, 0.015, 0.006, 0.001, 0.0008, 0.0005, 0.0002]; % inconsistent
+
+paramsolver.I = 60; % number of iterations
+
+insig = zeroPaddingForDGT(xq, a, M);
+
+omega_y = param.omega(insig);
+param.L = @(x) hatG(x, omega_y);
+param.L_adj = @(u) hatG_adj(u, omega_y);
+
+paramsolver.x0 = insig;
+paramsolver.u0 = zeros(size(param.L(zeros(length(insig), 1))));
+
+        switch method
+            case 'consistent'
+
+            paramsolver.lambda = paramsolver.lambda_c;
+            x_hat = CP(param, paramsolver, insig);
+            
+            case 'inconsistent'
+
+            paramsolver.lambda = paramsolver.lambda_i;
+            x_hat = CP_incons(param, paramsolver, insig);
+
+        end
+
+    outsig = x_hat(1:length(x));
+
+% SDR computation
+
+SDR = 20*log10(norm(x,2)./norm(x-outsig, 2));
+
+fprintf('SDR of the reconstructed signal is %4.3f dB.\n', SDR);
+
