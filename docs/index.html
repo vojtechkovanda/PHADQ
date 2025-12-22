@@ -63,31 +63,51 @@ layout: default
 <p>To justify the chosen number of iterations and to demonstrate the computational time of the methods, we present the following graphs, showing the evolution of SDR and ODG over time for the reconstruction of a single violin signal at bit depths of 6, 7, and 8 bps. The markers in the graphs indicate every fiftieth iteration of the algorithm. One iteration of the CP algorithm takes approximately 0.03 s, while an iteration of both of the B-PHADQ variants takes approximately 0.08 s. The graphs show that the B-PHADQ variants reach the optimal value faster than CP. ODG values were evaluated every fifth iteration.</p>
 <table>
   <tr>
-    <td><h2>6 bps<h2></td>
-    <td><h2>7 bps</h2></td>
-	<td><h2>8 bps</h2></td>
+    <th></th>
+    <th><h2>SDR</h2></th>
+    <th><h2>ODG</h2></th>
   </tr>
+
   <tr>
-    <td>  <div class="image-container">
-    <img src="violin_SDR_6.svg" width="600" height= auto alt="violin SDR">
-  </div></td>
-    <td>  <div class="image-container">
-    <img src="violin_SDR_7.svg" width="600" height= auto alt="violin SDR">
-  </div></td>
-	<td>  <div class="image-container">
-    <img src="violin_SDR_8.svg" width="600" height= auto alt="violin SDR">
-  </div></td>
+    <td><h2>6 bps</h2></td>
+    <td>
+      <div class="image-container">
+        <img src="violin_SDR_6.svg" width="600" alt="violin SDR 6 bps">
+      </div>
+    </td>
+    <td>
+      <div class="image-container">
+        <img src="violin_ODG_6.svg" width="600" alt="violin ODG 6 bps">
+      </div>
+    </td>
   </tr>
-    <tr>
-    <td>  <div class="image-container">
-    <img src="violin_ODG_6.svg" width="600" height= auto alt="violin ODG">
-  </div></td>
-    <td>  <div class="image-container">
-    <img src="violin_ODG_7.svg" width="600" height= auto alt="violin ODG">
-  </div></td>
-	<td>  <div class="image-container">
-    <img src="violin_ODG_8.svg" width="600" height= auto alt="violin ODG">
-  </div></td>
+
+  <tr>
+    <td><h2>7 bps</h2></td>
+    <td>
+      <div class="image-container">
+        <img src="violin_SDR_7.svg" width="600" alt="violin SDR 7 bps">
+      </div>
+    </td>
+    <td>
+      <div class="image-container">
+        <img src="violin_ODG_7.svg" width="600" alt="violin ODG 7 bps">
+      </div>
+    </td>
+  </tr>
+
+  <tr>
+    <td><h2>8 bps</h2></td>
+    <td>
+      <div class="image-container">
+        <img src="violin_SDR_8.svg" width="600" alt="violin SDR 8 bps">
+      </div>
+    </td>
+    <td>
+      <div class="image-container">
+        <img src="violin_ODG_8.svg" width="600" alt="violin ODG 8 bps">
+      </div>
+    </td>
   </tr>
 </table>
 

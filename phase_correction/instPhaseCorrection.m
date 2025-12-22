@@ -1,4 +1,4 @@
-function iPCspec = instPhaseCorrection(spec,IF,shiftLen,fftLen)
+function iPCspec = instPhaseCorrection(spec,cumPhase)
 % instPhaseCorrection: Calculating instantaneous-phase-corrected spectrogram.
 %   
 %   Usage:
@@ -28,11 +28,11 @@ function iPCspec = instPhaseCorrection(spec,IF,shiftLen,fftLen)
 
 %   Author: Kohei Yatabe (2019)
 
-sigLen = shiftLen*size(IF,2); % L (= a * N) : signal length
-freqShift = sigLen/fftLen;    % b (= L / M) : frequency stepsize
-
-idxVariation = freqShift*IF*shiftLen/sigLen;   % b * delta * a / L (in Eq. (29) of [1])
-cumPhase = 2*pi*mod(cumsum(idxVariation,2),1); % mod for avoiding huge value
+% sigLen = shiftLen*size(IF,2); % L (= a * N) : signal length
+% freqShift = sigLen/fftLen;    % b (= L / M) : frequency stepsize
+% 
+% idxVariation = freqShift*IF*shiftLen/sigLen;   % b * delta * a / L (in Eq. (29) of [1])
+% cumPhase = 2*pi*mod(cumsum(idxVariation,2),1); % mod for avoiding huge value
 
 iPCspec = exp(-1i*cumPhase).*spec; % implementation of Eq. (29) of [1]
 end
